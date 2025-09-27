@@ -1,5 +1,27 @@
+# Node
 node_modules/
-.env
+npm-debug.log*
+pnpm-lock.yaml
+yarn.lock
+
+# Ruby
+.bundle/
+vendor/bundle/
+
+# Shopify
 .shopify/
-dist/
+.shopify-cli.yml
+*.zip
+
+# Env
+.env
+.env.*.local
+
+# OS / Editor
 .DS_Store
+*.swp
+*.swo
+
+# Build
+dist/
+.cache/

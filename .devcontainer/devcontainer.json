@@ -1,0 +1,35 @@
+{
+  "name": "Nesheim & Vatten \u2014 Shopify Theme",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {},
+  "forwardPorts": [
+    9292,
+    9293
+  ],
+  "portsAttributes": {
+    "9292": {
+      "label": "Shopify Theme Dev"
+    },
+    "9293": {
+      "label": "Shopify Theme Preview"
+    }
+  },
+  "postCreateCommand": "bash -lc 'bundle install && npm install || true'",
+  "remoteEnv": {
+    "SHOPIFY_FLAG_STORE": "${{ secrets.SHOPIFY_FLAG_STORE }}",
+    "SHOPIFY_CLI_AUTH_TOKEN": "${{ secrets.SHOPIFY_CLI_AUTH_TOKEN }}",
+    "THEME_ID": "${{ secrets.THEME_ID }}"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Shopify.theme-check-vscode",
+        "EditorConfig.EditorConfig",
+        "esbenp.prettier-vscode",
+        "oderwat.indent-rainbow"
+      ]
+    }
+  }
+}
