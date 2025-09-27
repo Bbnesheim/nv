@@ -1,13 +1,7 @@
-# Basic Theme Check config. Tweak severities to your preference.
 extends: theme-check:recommended
-
 ignore:
   - node_modules/**
   - vendor/**
-  - .devcontainer/**
   - .github/**
+  - .devcontainer/**
   - dist/**
-
-# Example of customizing rules:
-# LiquidTag:
-#   severity: error

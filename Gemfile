@@ -1,3 +1,2 @@
-source 'https://rubygems.org'
-
-gem 'theme-check', '~> 1.17'
+source "https://rubygems.org"
+gem "theme-check", "~> 1.17"
