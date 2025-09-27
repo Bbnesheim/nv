@@ -1,0 +1,96 @@
+<section class="about-sticky">
+  <div class="about-sticky__columns">
+    <div class="about-sticky__slides">
+      {% for block in section.blocks %}
+        <article class="about-sticky__slide" id="about-sticky-{{ block.id }}" style="{% if block.settings.background_color != blank %}--about-sticky-slide-bg: {{ block.settings.background_color }};{% endif %}" {{ block.shopify_attributes }}>
+          {% if block.settings.title != blank %}
+            <h2 class="about-sticky__slide-title">{{ block.settings.title }}</h2>
+          {% endif %}
+          {% if block.settings.copy != blank %}
+            <div class="about-sticky__slide-copy">{{ block.settings.copy }}</div>
+          {% endif %}
+          {% if block.settings.image != blank %}
+            <div class="about-sticky__slide-media">
+              {{ block.settings.image | image_url: width: 1200 | image_tag: loading: 'lazy', class: 'about-sticky__image' }}
+            </div>
+          {% endif %}
+          {% if block.settings.video_url != blank %}
+            <p class="about-sticky__slide-video">{{ block.settings.video_url }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+    <div class="about-sticky__visual" aria-hidden="true"></div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "About sticky slides",
+  "tag": "section",
+  "class": "section about-sticky",
+  "settings": [],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Curiosity sparked our first prototype"
+        },
+        {
+          "type": "richtext",
+          "id": "copy",
+          "label": "Text",
+          "default": "<p>We started with a small workshop and a shared belief that thoughtful design can improve everyday routines.</p>"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "Video URL"
+        },
+        {
+          "type": "color",
+          "id": "background_color",
+          "label": "Background color"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "About sticky slides",
+      "blocks": [
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "title": "People-first design",
+            "copy": "<p>Every product is co-created with our community to ensure it meets the needs of real people.</p>",
+            "background_color": "#F4F1EB"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "title": "A sustainable path forward",
+            "copy": "<p>We invest in responsible materials and partners to reduce our footprint without compromising quality.</p>",
+            "background_color": "#E8F5F4"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

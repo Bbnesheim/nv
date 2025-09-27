@@ -1,0 +1,4 @@
+{% if template == 'page.about' %}
+  {{ 'about.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'about-sticky.js' | asset_url }}" defer="defer"></script>
+{% endif %}

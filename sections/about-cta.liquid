@@ -1,0 +1,52 @@
+<section class="about-cta">
+  <div class="about-cta__inner">
+    {% if section.settings.heading != blank %}
+      <h2 class="about-cta__heading">{{ section.settings.heading }}</h2>
+    {% endif %}
+    {% if section.settings.body != blank %}
+      <div class="about-cta__body">{{ section.settings.body }}</div>
+    {% endif %}
+    {% if section.settings.link != blank and section.settings.button_label != blank %}
+      <a class="about-cta__button" href="{{ section.settings.link }}">{{ section.settings.button_label }}</a>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "About call-to-action",
+  "tag": "section",
+  "class": "section about-cta",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Join us on the journey"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body",
+      "default": "<p>Stay in the loop with product launches, events, and stories from our team.</p>"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link",
+      "default": "/pages/contact"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Contact us"
+    }
+  ],
+  "presets": [
+    {
+      "name": "About call-to-action"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,18 @@
+{
+  "sections": {
+    "hero": {
+      "type": "about-hero"
+    },
+    "sticky": {
+      "type": "about-sticky-slides"
+    },
+    "cta": {
+      "type": "about-cta"
+    }
+  },
+  "order": [
+    "hero",
+    "sticky",
+    "cta"
+  ]
+}
