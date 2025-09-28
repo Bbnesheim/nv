@@ -1,0 +1,59 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-page",
+      "settings": {
+        "padding_top": 28,
+        "padding_bottom": 28
+      }
+    },
+    "sticky": {
+      "type": "nv-sticky-slides",
+      "settings": {
+        "sticky_top": 80,
+        "visual_aspect_ratio": "16/9"
+      },
+      "blocks": {
+        "slide-1": {
+          "type": "slide",
+          "settings": {
+            "title": "Design with intention",
+            "body": "<p>Every release is shaped by research, prototyping, and close collaboration with our community.</p>",
+            "image": "shopify://shop_images/about-sticky-slide-1.jpg",
+            "video": "",
+            "bg_color": ""
+          }
+        },
+        "slide-2": {
+          "type": "slide",
+          "settings": {
+            "title": "Celebrate diverse voices",
+            "body": "<p>We believe better ideas come from teams that reflect the world around us.</p>",
+            "image": "shopify://shop_images/about-sticky-slide-2.jpg",
+            "video": "",
+            "bg_color": ""
+          }
+        },
+        "slide-3": {
+          "type": "slide",
+          "settings": {
+            "title": "Leave things better",
+            "body": "<p>From materials to manufacturing, sustainability informs every decision.</p>",
+            "image": "shopify://shop_images/about-sticky-slide-3.jpg",
+            "video": "",
+            "bg_color": ""
+          }
+        }
+      },
+      "block_order": [
+        "slide-1",
+        "slide-2",
+        "slide-3"
+      ]
+    }
+  },
+  "order": [
+    "main",
+    "sticky"
+  ]
+}

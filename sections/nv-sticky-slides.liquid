@@ -1,0 +1,156 @@
+{% liquid
+  assign sticky_top = section.settings.sticky_top | default: 80
+  assign aspect_ratio_setting = section.settings.visual_aspect_ratio | default: '16/9'
+  assign aspect_ratio_value = aspect_ratio_setting | replace: '/', ' / '
+  assign first_block = section.blocks | first
+  assign first_video = ''
+  assign first_image = null
+  assign first_bg = ''
+  if first_block
+    assign first_video = first_block.settings.video | strip
+    assign first_image = first_block.settings.image
+    assign first_bg_setting = first_block.settings.bg_color
+    if first_bg_setting != blank and first_bg_setting.alpha > 0
+      assign first_bg = first_bg_setting
+    endif
+  endif
+%}
+
+{{ 'nv-sticky.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'nv-sticky.js' | asset_url }}" defer></script>
+
+<section
+  class="nv-sticky-slides"
+  data-section-id="{{ section.id }}"
+  style="--sticky-top: {{ sticky_top }}px; --visual-aspect-ratio: {{ aspect_ratio_value | escape }};"
+>
+  <div class="nv-sticky-slides__layout">
+    <div class="nv-sticky-slides__copy">
+      {% for block in section.blocks %}
+        {% liquid
+          assign slide_video = block.settings.video | strip
+          assign slide_bg = ''
+          if block.settings.bg_color != blank and block.settings.bg_color.alpha > 0
+            assign slide_bg = block.settings.bg_color
+          endif
+        %}
+        {% if block.settings.image != blank %}
+          {{ block.settings.image | image_url: width: 2400 | image_tag:
+            loading: 'lazy',
+            hidden: 'hidden',
+            decoding: 'async',
+            data: {
+              slide_image: ''
+            },
+            alt: block.settings.title | escape
+          }}
+        {% endif %}
+        <article
+          class="nv-sticky-slides__item{% if forloop.first %} is-active{% endif %}"
+          id="slide-{{ forloop.index }}"
+          data-sticky-item
+          data-block-id="{{ block.id }}"
+          data-video="{{ slide_video | escape }}"
+          data-bg="{{ slide_bg | escape }}"
+          {{ block.shopify_attributes }}
+        >
+          {% if block.settings.title != blank %}
+            <h3>{{ block.settings.title | escape }}</h3>
+          {% endif %}
+          {% if block.settings.body != blank %}
+            <div class="rte">{{ block.settings.body }}</div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+    <div class="nv-sticky-slides__visual"{% if first_bg != blank %} style="background-color: {{ first_bg | escape }};"{% endif %}>
+      <div class="nv-sticky-slides__visual-media" aria-hidden="true">
+        {% if first_block %}
+          {% if first_video != blank %}
+            <video src="{{ first_video | escape }}" playsinline muted loop preload="metadata"></video>
+          {% elsif first_image %}
+            {{ first_image | image_url: width: 2400 | image_tag:
+              loading: 'eager',
+              decoding: 'async',
+              alt: first_block.settings.title | escape
+            }}
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Sticky slides",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "sticky_top",
+      "label": "Sticky offset",
+      "min": 40,
+      "max": 140,
+      "step": 1,
+      "default": 80
+    },
+    {
+      "type": "text",
+      "id": "visual_aspect_ratio",
+      "label": "Visual aspect ratio",
+      "default": "16/9"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title"
+        },
+        {
+          "type": "richtext",
+          "id": "body",
+          "label": "Body"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "url",
+          "id": "video",
+          "label": "Video URL"
+        },
+        {
+          "type": "color",
+          "id": "bg_color",
+          "label": "Background color"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sticky slides",
+      "blocks": [
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
