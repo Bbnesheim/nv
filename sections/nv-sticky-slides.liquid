@@ -1,121 +1,84 @@
 {% liquid
-  assign intro_heading = section.settings.heading
-  assign intro_subheading = section.settings.subheading
-  assign intro_text = section.settings.body
-  assign show_nav = section.settings.show_inpage_nav
-  assign visual_ratio_setting = section.settings.visual_aspect_ratio | default: '16/9'
-  assign visual_ratio = visual_ratio_setting | replace: '/', ' / '
+  assign sticky_top = section.settings.sticky_top | default: 80
+  assign aspect_ratio_setting = section.settings.visual_aspect_ratio | default: '16/9'
+  assign aspect_ratio_value = aspect_ratio_setting | replace: '/', ' / '
+  assign first_block = section.blocks | first
+  assign first_video = ''
+  assign first_image = null
+  assign first_bg = ''
+  if first_block
+    assign first_video = first_block.settings.video | strip
+    assign first_image = first_block.settings.image
+    assign first_bg_setting = first_block.settings.bg_color
+    if first_bg_setting != blank and first_bg_setting.alpha > 0
+      assign first_bg = first_bg_setting
+    endif
+  endif
 %}
 
 {{ 'nv-sticky.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'nv-sticky.js' | asset_url }}" defer></script>
 
 <section
-  class="nv-sticky-slides section-{{ section.id }}"
-  data-nv-sticky
+  class="nv-sticky-slides"
   data-section-id="{{ section.id }}"
-  style="--nv-sticky-aspect: {{ visual_ratio | escape }}"
+  style="--sticky-top: {{ sticky_top }}px; --visual-aspect-ratio: {{ aspect_ratio_value | escape }};"
 >
-  <div class="nv-sticky-slides__inner">
-    {% if intro_heading or intro_subheading or intro_text != blank %}
-      <header class="nv-sticky-slides__intro">
-        {% if intro_subheading %}
-          <p class="nv-sticky-slides__eyebrow">{{ intro_subheading | escape }}</p>
+  <div class="nv-sticky-slides__layout">
+    <div class="nv-sticky-slides__copy">
+      {% for block in section.blocks %}
+        {% liquid
+          assign slide_video = block.settings.video | strip
+          assign slide_bg = ''
+          if block.settings.bg_color != blank and block.settings.bg_color.alpha > 0
+            assign slide_bg = block.settings.bg_color
+          endif
+        %}
+        {% if block.settings.image != blank %}
+          {{ block.settings.image | image_url: width: 2400 | image_tag:
+            loading: 'lazy',
+            hidden: 'hidden',
+            decoding: 'async',
+            data: {
+              slide_image: ''
+            },
+            alt: block.settings.title | escape
+          }}
         {% endif %}
-        {% if intro_heading %}
-          <h2 class="nv-sticky-slides__heading">{{ intro_heading | escape }}</h2>
+        <article
+          class="nv-sticky-slides__item{% if forloop.first %} is-active{% endif %}"
+          id="slide-{{ forloop.index }}"
+          data-sticky-item
+          data-block-id="{{ block.id }}"
+          data-video="{{ slide_video | escape }}"
+          data-bg="{{ slide_bg | escape }}"
+          {{ block.shopify_attributes }}
+        >
+          {% if block.settings.title != blank %}
+            <h3>{{ block.settings.title | escape }}</h3>
+          {% endif %}
+          {% if block.settings.body != blank %}
+            <div class="rte">{{ block.settings.body }}</div>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+    <div class="nv-sticky-slides__visual"{% if first_bg != blank %} style="background-color: {{ first_bg | escape }};"{% endif %}>
+      <div class="nv-sticky-slides__visual-media" aria-hidden="true">
+        {% if first_block %}
+          {% if first_video != blank %}
+            <video src="{{ first_video | escape }}" playsinline muted loop preload="metadata"></video>
+          {% elsif first_image %}
+            {{ first_image | image_url: width: 2400 | image_tag:
+              loading: 'eager',
+              decoding: 'async',
+              alt: first_block.settings.title | escape
+            }}
+          {% endif %}
         {% endif %}
-        {% if intro_text %}
-          <div class="nv-sticky-slides__body rte">{{ intro_text }}</div>
-        {% endif %}
-      </header>
-    {% endif %}
-
-    {% if show_nav and section.blocks.size > 0 %}
-      <nav class="nv-sticky-slides__nav" data-sticky-nav aria-label="Slide navigation">
-        <ul class="nv-sticky-slides__nav-list" role="list">
-          {% for block in section.blocks %}
-            {% liquid
-              assign nav_label = block.settings.heading
-              if nav_label == blank
-                assign nav_label = block.settings.eyebrow
-              endif
-              if nav_label == blank
-                assign nav_label = 'Slide ' | append: forloop.index
-              endif
-              assign slide_anchor_id = 'sticky-slide-' | append: section.id | append: '-' | append: block.id
-            %}
-            <li class="nv-sticky-slides__nav-item">
-              <a
-                class="nv-sticky-slides__nav-link"
-                href="#{{ slide_anchor_id }}"
-                data-sticky-nav-link
-                data-block-id="{{ block.id }}"
-              >{{ nav_label | escape }}</a>
-            </li>
-          {% endfor %}
-        </ul>
-      </nav>
-    {% endif %}
-
-    {% if section.blocks.size > 0 %}
-      <div class="nv-sticky-slides__layout">
-        <div class="nv-sticky-slides__copy" data-sticky-copy>
-          {% for block in section.blocks %}
-            {% liquid
-              assign slide_video = block.settings.video_url
-              assign slide_bg = block.settings.background
-              assign has_bg = false
-              assign slide_anchor_id = 'sticky-slide-' | append: section.id | append: '-' | append: block.id
-              if slide_bg != blank and slide_bg.alpha > 0
-                assign has_bg = true
-              endif
-            %}
-            <article
-              class="nv-sticky-slides__item"
-              id="{{ slide_anchor_id }}"
-              data-sticky-item
-              data-block-id="{{ block.id }}"
-              data-video="{{ slide_video | escape }}"
-              data-bg="{% if has_bg %}{{ slide_bg | escape }}{% endif %}"
-              {{ block.shopify_attributes }}
-            >
-              {% if block.settings.eyebrow %}
-                <p class="nv-sticky-slides__item-eyebrow">{{ block.settings.eyebrow | escape }}</p>
-              {% endif %}
-              {% if block.settings.heading %}
-                <h3 class="nv-sticky-slides__item-heading">{{ block.settings.heading | escape }}</h3>
-              {% endif %}
-              {% if block.settings.body != blank %}
-                <div class="nv-sticky-slides__item-body rte">{{ block.settings.body }}</div>
-              {% endif %}
-
-              {% if block.settings.cta_label != blank and block.settings.cta_link != blank %}
-                <a class="nv-sticky-slides__item-link" href="{{ block.settings.cta_link | escape }}">{{ block.settings.cta_label | escape }}</a>
-              {% endif %}
-
-              {% if block.settings.image != blank %}
-                {{ block.settings.image | image_url: width: 1600 | image_tag:
-                  loading: 'lazy',
-                  decoding: 'async',
-                  hidden: 'hidden',
-                  class: 'nv-sticky-slides__preload-image',
-                  data: {
-                    slide_image: ''
-                  },
-                  alt: block.settings.heading | escape
-                }}
-              {% endif %}
-            </article>
-          {% endfor %}
-        </div>
-        <div class="nv-sticky-slides__visual" data-sticky-visual>
-          <div class="nv-sticky-slides__visual-media" data-sticky-visual-target aria-hidden="true"></div>
-        </div>
       </div>
-    {% endif %}
+    </div>
   </div>
-
-  <script src="{{ 'nv-sticky.js' | asset_url }}" defer></script>
 </section>
 
 {% schema %}
@@ -125,25 +88,13 @@
   "class": "section",
   "settings": [
     {
-      "type": "text",
-      "id": "subheading",
-      "label": "Eyebrow"
-    },
-    {
-      "type": "text",
-      "id": "heading",
-      "label": "Heading"
-    },
-    {
-      "type": "richtext",
-      "id": "body",
-      "label": "Body"
-    },
-    {
-      "type": "checkbox",
-      "id": "show_inpage_nav",
-      "label": "Show in-page navigation",
-      "default": false
+      "type": "range",
+      "id": "sticky_top",
+      "label": "Sticky offset",
+      "min": 40,
+      "max": 140,
+      "step": 1,
+      "default": 80
     },
     {
       "type": "text",
@@ -159,28 +110,13 @@
       "settings": [
         {
           "type": "text",
-          "id": "eyebrow",
-          "label": "Eyebrow"
-        },
-        {
-          "type": "text",
-          "id": "heading",
-          "label": "Heading"
+          "id": "title",
+          "label": "Title"
         },
         {
           "type": "richtext",
           "id": "body",
           "label": "Body"
-        },
-        {
-          "type": "text",
-          "id": "cta_label",
-          "label": "Link label"
-        },
-        {
-          "type": "url",
-          "id": "cta_link",
-          "label": "Link URL"
         },
         {
           "type": "image_picker",
@@ -189,19 +125,17 @@
         },
         {
           "type": "url",
-          "id": "video_url",
-          "label": "Video URL",
-          "info": "MP4 video hosted on Shopify Files or CDN"
+          "id": "video",
+          "label": "Video URL"
         },
         {
           "type": "color",
-          "id": "background",
-          "label": "Visual background"
+          "id": "bg_color",
+          "label": "Background color"
         }
       ]
     }
   ],
-  "max_blocks": 6,
   "presets": [
     {
       "name": "Sticky slides",

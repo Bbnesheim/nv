@@ -10,50 +10,38 @@
     "sticky": {
       "type": "nv-sticky-slides",
       "settings": {
-        "subheading": "Our story",
-        "heading": "What guides our team",
-        "body": "<p>We build thoughtful products and experiences for everyday rituals.</p>",
-        "show_inpage_nav": true,
+        "sticky_top": 80,
         "visual_aspect_ratio": "16/9"
       },
       "blocks": {
         "slide-1": {
           "type": "slide",
           "settings": {
-            "eyebrow": "Craft",
-            "heading": "Design with intention",
+            "title": "Design with intention",
             "body": "<p>Every release is shaped by research, prototyping, and close collaboration with our community.</p>",
-            "cta_label": "Explore our process",
-            "cta_link": "#",
             "image": "shopify://shop_images/about-sticky-slide-1.jpg",
-            "video_url": "",
-            "background": ""
+            "video": "",
+            "bg_color": ""
           }
         },
         "slide-2": {
           "type": "slide",
           "settings": {
-            "eyebrow": "People",
-            "heading": "Celebrate diverse voices",
+            "title": "Celebrate diverse voices",
             "body": "<p>We believe better ideas come from teams that reflect the world around us.</p>",
-            "cta_label": "Meet the team",
-            "cta_link": "#",
             "image": "shopify://shop_images/about-sticky-slide-2.jpg",
-            "video_url": "",
-            "background": ""
+            "video": "",
+            "bg_color": ""
           }
         },
         "slide-3": {
           "type": "slide",
           "settings": {
-            "eyebrow": "Planet",
-            "heading": "Leave things better",
+            "title": "Leave things better",
             "body": "<p>From materials to manufacturing, sustainability informs every decision.</p>",
-            "cta_label": "Read our impact report",
-            "cta_link": "#",
             "image": "shopify://shop_images/about-sticky-slide-3.jpg",
-            "video_url": "",
-            "background": ""
+            "video": "",
+            "bg_color": ""
           }
         }
       },
