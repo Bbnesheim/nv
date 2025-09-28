@@ -70,12 +70,8 @@
               id="{{ slide_anchor_id }}"
               data-sticky-item
               data-block-id="{{ block.id }}"
-              {% if slide_video != blank %}
-                data-video="{{ slide_video | escape }}"
-              {% endif %}
-              {% if has_bg %}
-                data-bg="{{ slide_bg | escape }}"
-              {% endif %}
+              data-video="{{ slide_video | escape }}"
+              data-bg="{% if has_bg %}{{ slide_bg | escape }}{% endif %}"
               {{ block.shopify_attributes }}
             >
               {% if block.settings.eyebrow %}
