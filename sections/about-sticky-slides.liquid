@@ -2,6 +2,7 @@
   assign intro_heading = section.settings.heading
   assign intro_subheading = section.settings.subheading
   assign intro_text = section.settings.body
+  assign show_nav = section.settings.show_inpage_nav
 %}
 
 <section
@@ -24,6 +25,33 @@
       </header>
     {% endif %}
 
+    {% if show_nav and section.blocks.size > 0 %}
+      <nav class="about-sticky-slides__nav" data-sticky-nav aria-label="Slide navigation">
+        <ul class="about-sticky-slides__nav-list" role="list">
+          {% for block in section.blocks %}
+            {% liquid
+              assign nav_label = block.settings.heading
+              if nav_label == blank
+                assign nav_label = block.settings.eyebrow
+              endif
+              if nav_label == blank
+                assign nav_label = 'Slide ' | append: forloop.index
+              endif
+              assign slide_anchor_id = 'sticky-slide-' | append: section.id | append: '-' | append: block.id
+            %}
+            <li class="about-sticky-slides__nav-item">
+              <a
+                class="about-sticky-slides__nav-link"
+                href="#{{ slide_anchor_id }}"
+                data-sticky-nav-link
+                data-block-id="{{ block.id }}"
+              >{{ nav_label | escape }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+
     {% if section.blocks.size > 0 %}
       <div class="about-sticky-slides__layout">
         <div class="about-sticky-slides__copy" data-sticky-copy>
@@ -32,12 +60,14 @@
               assign slide_video = block.settings.video_url
               assign slide_bg = block.settings.background
               assign has_bg = false
+              assign slide_anchor_id = 'sticky-slide-' | append: section.id | append: '-' | append: block.id
               if slide_bg != blank and slide_bg.alpha > 0
                 assign has_bg = true
               endif
             %}
             <article
               class="about-sticky-slides__item"
+              id="{{ slide_anchor_id }}"
               data-sticky-item
               data-block-id="{{ block.id }}"
               {% if slide_video != blank %}
@@ -105,6 +135,12 @@
       "type": "richtext",
       "id": "body",
       "label": "Body"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_inpage_nav",
+      "label": "Show in-page navigation",
+      "default": false
     }
   ],
   "blocks": [
