@@ -1,0 +1,132 @@
+/* About template tokens and layout */
+.template-page-about {
+  --about-gap: clamp(2.4rem, 5vw, 6.4rem);
+  --about-content-max: min(64ch, 90vw);
+  --about-heading-size: clamp(3.2rem, 6vw, 4.8rem);
+  --about-subheading-size: clamp(1.6rem, 4vw, 2rem);
+  --about-body-size: clamp(1.5rem, 3vw, 1.8rem);
+}
+
+.template-page-about .about-hero,
+.template-page-about .about-cta {
+  padding-block: var(--about-gap);
+  padding-inline: clamp(1.6rem, 6vw, 5.6rem);
+}
+
+.template-page-about .about-hero > *,
+.template-page-about .about-cta > * {
+  margin-inline: auto;
+  max-width: var(--about-content-max);
+}
+
+.template-page-about .about-hero__layout {
+  display: grid;
+  gap: var(--about-gap);
+}
+
+.template-page-about .about-hero__content {
+  display: grid;
+  gap: clamp(1.6rem, 4vw, 2.4rem);
+  text-align: center;
+}
+
+.template-page-about .about-hero__eyebrow {
+  font-size: var(--about-subheading-size);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.template-page-about .about-hero__heading {
+  font-size: var(--about-heading-size);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.template-page-about .about-hero__text,
+.template-page-about .about-cta__text {
+  font-size: var(--about-body-size);
+  line-height: 1.6;
+  color: rgba(var(--color-foreground), 0.82);
+}
+
+.template-page-about .about-hero__media {
+  display: grid;
+  place-items: center;
+}
+
+.template-page-about .about-hero__media img,
+.template-page-about .about-hero__media picture,
+.template-page-about .about-hero__media .media {
+  border-radius: min(1.6rem, var(--media-radius));
+  overflow: hidden;
+  width: min(480px, 100%);
+  box-shadow: 0 1.2rem 3.2rem rgba(15, 23, 42, 0.08);
+}
+
+.template-page-about .about-hero .button {
+  justify-self: center;
+}
+
+.template-page-about .about-cta {
+  background: rgba(var(--color-background-contrast), 0.08);
+  border-radius: clamp(1.2rem, 4vw, 2.4rem);
+}
+
+.template-page-about .about-cta__inner {
+  display: grid;
+  gap: clamp(1.6rem, 4vw, 2.4rem);
+  text-align: center;
+  padding: clamp(2.4rem, 5vw, 3.6rem);
+}
+
+.template-page-about .about-cta__heading {
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  line-height: 1.15;
+}
+
+.template-page-about .about-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1.2rem, 3vw, 1.8rem);
+}
+
+.template-page-about .about-cta__note {
+  font-size: clamp(1.4rem, 3vw, 1.6rem);
+  color: rgba(var(--color-foreground), 0.66);
+}
+
+@media screen and (min-width: 750px) {
+  .template-page-about .about-hero__content {
+    text-align: left;
+  }
+
+  .template-page-about .about-hero .button {
+    justify-self: flex-start;
+  }
+
+  .template-page-about .about-cta__inner {
+    text-align: left;
+    padding-inline: clamp(3.6rem, 6vw, 5.2rem);
+  }
+
+  .template-page-about .about-cta__actions {
+    justify-content: flex-start;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .template-page-about .about-hero__layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    align-items: center;
+  }
+
+  .template-page-about .about-hero--media-right .about-hero__layout {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr);
+  }
+
+  .template-page-about .about-hero--media-right .about-hero__content {
+    order: 1;
+  }
+}
