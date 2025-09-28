@@ -3,31 +3,36 @@
   assign intro_subheading = section.settings.subheading
   assign intro_text = section.settings.body
   assign show_nav = section.settings.show_inpage_nav
+  assign visual_ratio_setting = section.settings.visual_aspect_ratio | default: '16/9'
+  assign visual_ratio = visual_ratio_setting | replace: '/', ' / '
 %}
 
+{{ 'nv-sticky.css' | asset_url | stylesheet_tag }}
+
 <section
-  class="about-sticky-slides section-{{ section.id }}"
-  data-about-sticky
+  class="nv-sticky-slides section-{{ section.id }}"
+  data-nv-sticky
   data-section-id="{{ section.id }}"
+  style="--nv-sticky-aspect: {{ visual_ratio | escape }}"
 >
-  <div class="about-sticky-slides__inner">
+  <div class="nv-sticky-slides__inner">
     {% if intro_heading or intro_subheading or intro_text != blank %}
-      <header class="about-sticky-slides__intro">
+      <header class="nv-sticky-slides__intro">
         {% if intro_subheading %}
-          <p class="about-sticky-slides__eyebrow">{{ intro_subheading | escape }}</p>
+          <p class="nv-sticky-slides__eyebrow">{{ intro_subheading | escape }}</p>
         {% endif %}
         {% if intro_heading %}
-          <h2 class="about-sticky-slides__heading">{{ intro_heading | escape }}</h2>
+          <h2 class="nv-sticky-slides__heading">{{ intro_heading | escape }}</h2>
         {% endif %}
         {% if intro_text %}
-          <div class="about-sticky-slides__body rte">{{ intro_text }}</div>
+          <div class="nv-sticky-slides__body rte">{{ intro_text }}</div>
         {% endif %}
       </header>
     {% endif %}
 
     {% if show_nav and section.blocks.size > 0 %}
-      <nav class="about-sticky-slides__nav" data-sticky-nav aria-label="Slide navigation">
-        <ul class="about-sticky-slides__nav-list" role="list">
+      <nav class="nv-sticky-slides__nav" data-sticky-nav aria-label="Slide navigation">
+        <ul class="nv-sticky-slides__nav-list" role="list">
           {% for block in section.blocks %}
             {% liquid
               assign nav_label = block.settings.heading
@@ -39,9 +44,9 @@
               endif
               assign slide_anchor_id = 'sticky-slide-' | append: section.id | append: '-' | append: block.id
             %}
-            <li class="about-sticky-slides__nav-item">
+            <li class="nv-sticky-slides__nav-item">
               <a
-                class="about-sticky-slides__nav-link"
+                class="nv-sticky-slides__nav-link"
                 href="#{{ slide_anchor_id }}"
                 data-sticky-nav-link
                 data-block-id="{{ block.id }}"
@@ -53,8 +58,8 @@
     {% endif %}
 
     {% if section.blocks.size > 0 %}
-      <div class="about-sticky-slides__layout">
-        <div class="about-sticky-slides__copy" data-sticky-copy>
+      <div class="nv-sticky-slides__layout">
+        <div class="nv-sticky-slides__copy" data-sticky-copy>
           {% for block in section.blocks %}
             {% liquid
               assign slide_video = block.settings.video_url
@@ -66,7 +71,7 @@
               endif
             %}
             <article
-              class="about-sticky-slides__item"
+              class="nv-sticky-slides__item"
               id="{{ slide_anchor_id }}"
               data-sticky-item
               data-block-id="{{ block.id }}"
@@ -75,17 +80,17 @@
               {{ block.shopify_attributes }}
             >
               {% if block.settings.eyebrow %}
-                <p class="about-sticky-slides__item-eyebrow">{{ block.settings.eyebrow | escape }}</p>
+                <p class="nv-sticky-slides__item-eyebrow">{{ block.settings.eyebrow | escape }}</p>
               {% endif %}
               {% if block.settings.heading %}
-                <h3 class="about-sticky-slides__item-heading">{{ block.settings.heading | escape }}</h3>
+                <h3 class="nv-sticky-slides__item-heading">{{ block.settings.heading | escape }}</h3>
               {% endif %}
               {% if block.settings.body != blank %}
-                <div class="about-sticky-slides__item-body rte">{{ block.settings.body }}</div>
+                <div class="nv-sticky-slides__item-body rte">{{ block.settings.body }}</div>
               {% endif %}
 
               {% if block.settings.cta_label != blank and block.settings.cta_link != blank %}
-                <a class="about-sticky-slides__item-link" href="{{ block.settings.cta_link | escape }}">{{ block.settings.cta_label | escape }}</a>
+                <a class="nv-sticky-slides__item-link" href="{{ block.settings.cta_link | escape }}">{{ block.settings.cta_label | escape }}</a>
               {% endif %}
 
               {% if block.settings.image != blank %}
@@ -93,7 +98,7 @@
                   loading: 'lazy',
                   decoding: 'async',
                   hidden: 'hidden',
-                  class: 'about-sticky-slides__preload-image',
+                  class: 'nv-sticky-slides__preload-image',
                   data: {
                     slide_image: ''
                   },
@@ -103,17 +108,19 @@
             </article>
           {% endfor %}
         </div>
-        <div class="about-sticky-slides__visual" data-sticky-visual>
-          <div class="about-sticky-slides__visual-media" data-sticky-visual-target aria-hidden="true"></div>
+        <div class="nv-sticky-slides__visual" data-sticky-visual>
+          <div class="nv-sticky-slides__visual-media" data-sticky-visual-target aria-hidden="true"></div>
         </div>
       </div>
     {% endif %}
   </div>
+
+  <script src="{{ 'nv-sticky.js' | asset_url }}" defer></script>
 </section>
 
 {% schema %}
 {
-  "name": "About sticky slides",
+  "name": "Sticky slides",
   "tag": "section",
   "class": "section",
   "settings": [
@@ -137,6 +144,12 @@
       "id": "show_inpage_nav",
       "label": "Show in-page navigation",
       "default": false
+    },
+    {
+      "type": "text",
+      "id": "visual_aspect_ratio",
+      "label": "Visual aspect ratio",
+      "default": "16/9"
     }
   ],
   "blocks": [
@@ -191,8 +204,11 @@
   "max_blocks": 6,
   "presets": [
     {
-      "name": "About sticky slides",
+      "name": "Sticky slides",
       "blocks": [
+        {
+          "type": "slide"
+        },
         {
           "type": "slide"
         },
