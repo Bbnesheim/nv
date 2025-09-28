@@ -252,11 +252,6 @@
 .template-page-about .about-sticky-slides__intro {
   display: grid;
   gap: clamp(1rem, 3vw, 1.8rem);
-  max-width: var(--about-measure-base);
-}
-
-.template-page-about .about-sticky-slides__eyebrow {
-  font-size: var(--about-type-200);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 600;
@@ -264,17 +259,6 @@
 }
 
 .template-page-about .about-sticky-slides__heading {
-  font-size: var(--about-type-600);
-  line-height: 1.14;
-  letter-spacing: -0.01em;
-  max-width: var(--about-measure-base);
-}
-
-.template-page-about .about-sticky-slides__body {
-  font-size: var(--about-type-400);
-  line-height: 1.6;
-  color: rgba(var(--color-foreground), 0.78);
-  max-width: var(--about-measure-base);
 }
 
 .template-page-about .about-sticky-slides__layout {
@@ -297,23 +281,9 @@
 }
 
 .template-page-about .about-sticky-slides__item-eyebrow {
-  font-size: var(--about-type-200);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: rgba(var(--color-foreground), 0.64);
-}
-
-.template-page-about .about-sticky-slides__item-heading {
-  font-size: var(--about-type-500);
-  line-height: 1.18;
-  max-width: var(--about-measure-tight);
-}
-
-.template-page-about .about-sticky-slides__item-body {
-  font-size: var(--about-type-400);
-  line-height: 1.58;
-  color: rgba(var(--color-foreground), 0.8);
-  max-width: var(--about-measure-tight);
 }
 
 .template-page-about .about-sticky-slides__item-link {
@@ -321,8 +291,6 @@
   color: rgb(var(--color-foreground));
   text-decoration: underline;
   text-decoration-thickness: 0.1em;
-  font-size: var(--about-type-300);
-  line-height: 1.4;
 }
 
 .template-page-about .about-sticky-slides__item.is-active {
@@ -383,16 +351,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .template-page-about .about-hero__content > *,
-  .template-page-about .about-hero__media,
-  .template-page-about .about-sticky-slides__intro > *,
-  .template-page-about .about-sticky-slides__item,
-  .template-page-about .about-cta__inner > * {
-    animation: none !important;
-    opacity: 1 !important;
-    translate: 0 !important;
-  }
-
   .template-page-about .about-sticky-slides__item {
     transition: none;
     transform: none !important;
