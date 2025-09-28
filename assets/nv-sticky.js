@@ -1,4 +1,4 @@
-class AboutStickySlides {
+class NvStickySlides {
   constructor(section) {
     this.section = section;
     this.sectionId = section.dataset.sectionId || section.id;
@@ -52,7 +52,6 @@ class AboutStickySlides {
       this.nav.addEventListener('click', this.handleNavClick);
     }
 
-    // Activate the first item immediately so an initial visual is rendered.
     this.activateItem(this.items[0]);
   }
 
@@ -162,7 +161,7 @@ class AboutStickySlides {
       clone.hidden = false;
       clone.removeAttribute('hidden');
       clone.removeAttribute('data-slide-image');
-      clone.classList.remove('about-sticky-slides__preload-image');
+      clone.classList.remove('nv-sticky-slides__preload-image');
       clone.setAttribute('data-active-slide', '');
       this.mediaTarget.appendChild(clone);
       this.activeMedia = clone;
@@ -171,7 +170,7 @@ class AboutStickySlides {
 
   pauseItemMedia(item) {
     if (!item) return;
-    const video = item._aboutStickyVideo;
+    const video = item._nvStickyVideo;
     if (video instanceof HTMLVideoElement) {
       video.pause();
       video.removeAttribute('autoplay');
@@ -179,7 +178,7 @@ class AboutStickySlides {
   }
 
   getOrCreateVideo(item, src) {
-    if (!item._aboutStickyVideo) {
+    if (!item._nvStickyVideo) {
       const video = document.createElement('video');
       video.src = src;
       video.setAttribute('playsinline', '');
@@ -189,16 +188,16 @@ class AboutStickySlides {
       video.loop = true;
       video.playsInline = true;
       video.preload = 'metadata';
-      video.className = 'about-sticky-slides__video';
+      video.className = 'nv-sticky-slides__video';
       video.tabIndex = -1;
       video.setAttribute('aria-hidden', 'true');
-      item._aboutStickyVideo = video;
-    } else if (item._aboutStickyVideo.src !== src) {
-      item._aboutStickyVideo.src = src;
-      item._aboutStickyVideo.load();
+      item._nvStickyVideo = video;
+    } else if (item._nvStickyVideo.src !== src) {
+      item._nvStickyVideo.src = src;
+      item._nvStickyVideo.load();
     }
 
-    return item._aboutStickyVideo;
+    return item._nvStickyVideo;
   }
 
   updateVideoPlayback(video) {
@@ -263,33 +262,33 @@ class AboutStickySlides {
   }
 }
 
-const aboutStickyInstances = new Map();
+const nvStickyInstances = new Map();
 
-const initAboutStickySections = (root = document) => {
-  const sections = root.querySelectorAll('[data-about-sticky]');
+const initNvStickySections = (root = document) => {
+  const sections = root.querySelectorAll('[data-nv-sticky]');
   sections.forEach((section) => {
     const id = section.dataset.sectionId || section.id;
-    if (!id || aboutStickyInstances.has(id)) {
+    if (!id || nvStickyInstances.has(id)) {
       return;
     }
-    const instance = new AboutStickySlides(section);
+    const instance = new NvStickySlides(section);
     if (instance && instance.items && instance.items.length) {
-      aboutStickyInstances.set(id, instance);
+      nvStickyInstances.set(id, instance);
     }
   });
 };
 
-const unloadAboutStickySection = (sectionId) => {
-  const instance = aboutStickyInstances.get(sectionId);
+const unloadNvStickySection = (sectionId) => {
+  const instance = nvStickyInstances.get(sectionId);
   if (!instance) return;
   instance.destroy();
-  aboutStickyInstances.delete(sectionId);
+  nvStickyInstances.delete(sectionId);
 };
 
 const handleBlockSelect = (event) => {
   const { sectionId, blockId } = event.detail || {};
   if (!sectionId || !blockId) return;
-  const instance = aboutStickyInstances.get(sectionId);
+  const instance = nvStickyInstances.get(sectionId);
   if (!instance) return;
   instance.activateByBlockId(blockId, { scrollIntoView: true });
 };
@@ -297,24 +296,24 @@ const handleBlockSelect = (event) => {
 const handleBlockDeselect = (event) => {
   const { sectionId, blockId } = event.detail || {};
   if (!sectionId || !blockId) return;
-  const instance = aboutStickyInstances.get(sectionId);
+  const instance = nvStickyInstances.get(sectionId);
   if (!instance) return;
   instance.activateByBlockId(blockId);
 };
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initAboutStickySections());
+  document.addEventListener('DOMContentLoaded', () => initNvStickySections());
 } else {
-  initAboutStickySections();
+  initNvStickySections();
 }
 
 document.addEventListener('shopify:section:load', (event) => {
-  const section = event.target.querySelector('[data-about-sticky]');
+  const section = event.target.querySelector('[data-nv-sticky]');
   const sectionId = event.detail && event.detail.sectionId;
   if (!section) return;
-  initAboutStickySections(event.target);
+  initNvStickySections(event.target);
   if (sectionId) {
-    const instance = aboutStickyInstances.get(sectionId);
+    const instance = nvStickyInstances.get(sectionId);
     if (instance) {
       instance.activateItem(instance.items[0]);
     }
@@ -324,7 +323,7 @@ document.addEventListener('shopify:section:load', (event) => {
 document.addEventListener('shopify:section:unload', (event) => {
   const sectionId = event.detail && event.detail.sectionId;
   if (!sectionId) return;
-  unloadAboutStickySection(sectionId);
+  unloadNvStickySection(sectionId);
 });
 
 document.addEventListener('shopify:block:select', handleBlockSelect);
