@@ -1,331 +1,307 @@
-class NvStickySlides {
-  constructor(section) {
-    this.section = section;
-    this.sectionId = section.dataset.sectionId || section.id;
-    this.items = Array.from(section.querySelectorAll('[data-sticky-item]'));
-    this.visualContainer = section.querySelector('[data-sticky-visual]');
-    this.mediaTarget = section.querySelector('[data-sticky-visual-target]');
-    this.visualSurface = this.mediaTarget ? this.mediaTarget.parentElement : null;
-    this.nav = section.querySelector('[data-sticky-nav]');
-    this.navLinks = this.nav ? Array.from(this.nav.querySelectorAll('[data-sticky-nav-link]')) : [];
-    this.activeItem = null;
-    this.activeMedia = null;
+(() => {
+  const registry = new WeakMap();
 
-    if (!this.items.length || !this.mediaTarget) {
-      return;
-    }
+  class StickySlides {
+    constructor(section) {
+      this.section = section;
+      this.items = Array.from(section.querySelectorAll('[data-sticky-item]'));
+      this.visualContainer = section.querySelector('.nv-sticky-slides__visual');
+      this.mediaTarget = section.querySelector('.nv-sticky-slides__visual-media');
+      this.activeIndex = -1;
+      this.activeMedia = null;
+      this.observer = null;
+      this.motionQuery = null;
+      this.prefersReducedMotion = false;
 
-    this.motionQuery = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-    this.prefersReducedMotion = !!(this.motionQuery && this.motionQuery.matches);
-    this.motionListener = () => {
-      this.prefersReducedMotion = !!(this.motionQuery && this.motionQuery.matches);
-      if (this.activeMedia instanceof HTMLVideoElement) {
-        this.updateVideoPlayback(this.activeMedia);
-      }
-    };
-
-    if (this.motionQuery) {
-      if (this.motionQuery.addEventListener) {
-        this.motionQuery.addEventListener('change', this.motionListener);
-      } else if (this.motionQuery.addListener) {
-        this.motionQuery.addListener(this.motionListener);
-      }
-    }
-
-    if (typeof window.IntersectionObserver !== 'function') {
-      this.activateItem(this.items[0]);
-      return;
-    }
-
-    this.handleIntersections = this.handleIntersections.bind(this);
-    this.observer = new IntersectionObserver(this.handleIntersections, {
-      threshold: 0.5,
-      rootMargin: '0px 0px -35% 0px',
-    });
-
-    this.items.forEach((item) => {
-      this.observer.observe(item);
-    });
-
-    if (this.nav && this.navLinks.length) {
-      this.handleNavClick = this.handleNavClick.bind(this);
-      this.nav.addEventListener('click', this.handleNavClick);
-    }
-
-    this.activateItem(this.items[0]);
-  }
-
-  handleIntersections(entries) {
-    entries.forEach((entry) => {
-      const { target } = entry;
-      if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-        this.activateItem(target);
+      if (!this.items.length || !this.mediaTarget) {
+        this.initialized = false;
         return;
       }
 
-      if (!entry.isIntersecting && this.activeItem === target) {
-        this.pauseItemMedia(target);
-        target.classList.remove('is-active');
+      if ('matchMedia' in window) {
+        this.motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        this.prefersReducedMotion = this.motionQuery.matches;
+        this.handleMotionChange = (event) => {
+          this.prefersReducedMotion = event.matches;
+          if (this.activeMedia instanceof HTMLVideoElement) {
+            this.updateVideoPlayback(this.activeMedia);
+          }
+        };
+        if (typeof this.motionQuery.addEventListener === 'function') {
+          this.motionQuery.addEventListener('change', this.handleMotionChange);
+        } else if (typeof this.motionQuery.addListener === 'function') {
+          this.motionQuery.addListener(this.handleMotionChange);
+        }
+      }
+
+      if ('IntersectionObserver' in window) {
+        this.observer = new IntersectionObserver(this.handleIntersections.bind(this), {
+          threshold: 0.5,
+        });
+        this.items.forEach((item) => this.observer.observe(item));
+      }
+
+      this.setActiveIndex(0);
+      this.initialized = true;
+    }
+
+    handleIntersections(entries) {
+      let candidate = null;
+      let maxRatio = 0.5;
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= maxRatio) {
+          candidate = entry.target;
+          maxRatio = entry.intersectionRatio;
+        }
+      });
+
+      if (candidate) {
+        const index = this.items.indexOf(candidate);
+        if (index !== -1) {
+          this.setActiveIndex(index);
+        }
+      }
+    }
+
+    setActiveIndex(index) {
+      if (index < 0 || index >= this.items.length || index === this.activeIndex) {
+        return;
+      }
+
+      const previousItem = this.items[this.activeIndex];
+      if (previousItem) {
+        previousItem.classList.remove('is-active');
+        this.pauseMedia(previousItem);
+      }
+
+      this.cleanupMedia();
+
+      const nextItem = this.items[index];
+      nextItem.classList.add('is-active');
+
+      this.renderMedia(nextItem);
+
+      this.activeIndex = index;
+      this.preloadNext(index);
+    }
+
+    renderMedia(item) {
+      if (!item) return;
+
+      const bg = (item.dataset.bg || '').trim();
+      if (this.visualContainer) {
+        if (bg) {
+          this.visualContainer.style.backgroundColor = bg;
+        } else {
+          this.visualContainer.style.removeProperty('background-color');
+        }
+      }
+
+      const videoSrc = (item.dataset.video || '').trim();
+      if (videoSrc) {
+        const video = this.createVideo(item, videoSrc);
+        if (video) {
+          this.mediaTarget.innerHTML = '';
+          this.mediaTarget.appendChild(video);
+          this.activeMedia = video;
+          this.updateVideoPlayback(video);
+        }
+        return;
+      }
+
+      const image = item.querySelector('[data-slide-image]');
+      if (!image) {
+        this.mediaTarget.innerHTML = '';
         this.activeMedia = null;
-        this.activeItem = null;
-        this.updateNavState(null);
         return;
       }
 
-      if (!entry.isIntersecting) {
-        target.classList.remove('is-active');
-      }
-    });
-  }
-
-  activateItem(item) {
-    if (!item || this.activeItem === item) {
-      return;
+      const clone = image.cloneNode(true);
+      clone.removeAttribute('data-slide-image');
+      clone.removeAttribute('hidden');
+      clone.hidden = false;
+      clone.loading = 'eager';
+      this.mediaTarget.innerHTML = '';
+      this.mediaTarget.appendChild(clone);
+      this.activeMedia = clone;
     }
 
-    if (this.activeItem && this.activeItem !== item) {
-      this.pauseItemMedia(this.activeItem);
-      this.activeItem.classList.remove('is-active');
+    createVideo(item, src) {
+      let video = item._nvStickyVideo;
+      if (!video) {
+        video = document.createElement('video');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('muted', '');
+        video.setAttribute('loop', '');
+        video.playsInline = true;
+        video.muted = true;
+        video.loop = true;
+        video.preload = 'metadata';
+        video.setAttribute('aria-hidden', 'true');
+        video.tabIndex = -1;
+        item._nvStickyVideo = video;
+      }
+
+      if (video.src !== src) {
+        video.src = src;
+        video.load();
+      }
+
+      return video;
     }
 
-    this.activeItem = item;
-    this.activeItem.classList.add('is-active');
-    this.swapVisualForItem(item);
-    this.updateNavState(item.dataset.blockId);
-  }
+    updateVideoPlayback(video) {
+      if (!(video instanceof HTMLVideoElement)) return;
 
-  handleNavClick(event) {
-    if (!this.navLinks.length) return;
-    const link = event.target.closest('[data-sticky-nav-link]');
-    if (!link || !this.nav.contains(link)) return;
-    const { blockId } = link.dataset;
-    if (!blockId) return;
-    event.preventDefault();
-    this.activateByBlockId(blockId, { scrollIntoView: true });
-    link.focus();
-  }
-
-  updateNavState(blockId) {
-    if (!this.navLinks.length) return;
-    this.navLinks.forEach((link) => {
-      const isActive = Boolean(blockId && link.dataset.blockId === blockId);
-      if (isActive) {
-        link.setAttribute('aria-current', 'true');
-        link.classList.add('is-active');
-      } else {
-        link.removeAttribute('aria-current');
-        link.classList.remove('is-active');
+      if (this.prefersReducedMotion) {
+        video.pause();
+        video.removeAttribute('autoplay');
+        video.currentTime = 0;
+        return;
       }
-    });
-  }
 
-  swapVisualForItem(item) {
-    if (!this.mediaTarget) return;
-
-    if (this.activeMedia) {
-      if (this.activeMedia instanceof HTMLVideoElement) {
-        this.activeMedia.pause();
+      video.setAttribute('autoplay', '');
+      const playPromise = video.play();
+      if (playPromise && typeof playPromise.then === 'function') {
+        playPromise.catch(() => {});
       }
-      if (this.activeMedia.parentElement === this.mediaTarget) {
-        this.mediaTarget.removeChild(this.activeMedia);
+    }
+
+    pauseMedia(item) {
+      if (!item || !item._nvStickyVideo) return;
+      const video = item._nvStickyVideo;
+      if (video instanceof HTMLVideoElement) {
+        video.pause();
+        video.removeAttribute('autoplay');
+      }
+    }
+
+    cleanupMedia() {
+      if (this.mediaTarget) {
+        this.mediaTarget.innerHTML = '';
       }
       this.activeMedia = null;
     }
 
-    this.mediaTarget.innerHTML = '';
+    preloadNext(index) {
+      const nextItem = this.items[index + 1];
+      if (!nextItem) return;
 
-    const background = item.dataset.bg;
-    const visualSurface = this.visualSurface || this.visualContainer;
-    if (visualSurface) {
-      if (background) {
-        visualSurface.style.backgroundColor = background;
-      } else {
-        visualSurface.style.removeProperty('background-color');
+      if (nextItem._nvStickyPreloaded) return;
+
+      const nextVideo = (nextItem.dataset.video || '').trim();
+      if (nextVideo) {
+        const video = document.createElement('video');
+        video.src = nextVideo;
+        video.preload = 'auto';
+        nextItem._nvStickyPreloadVideo = video;
+        nextItem._nvStickyPreloaded = true;
+        return;
       }
-    }
 
-    const videoSrc = item.dataset.video;
-    if (videoSrc) {
-      const video = this.getOrCreateVideo(item, videoSrc);
-      if (video) {
-        this.mediaTarget.appendChild(video);
-        this.activeMedia = video;
-        this.updateVideoPlayback(video);
+      const image = nextItem.querySelector('[data-slide-image]');
+      if (image) {
+        const src = image.currentSrc || image.src;
+        if (src) {
+          const preload = new Image();
+          preload.src = src;
+          nextItem._nvStickyPreloadImage = preload;
+        }
       }
-      return;
+
+      nextItem._nvStickyPreloaded = true;
     }
 
-    const image = item.querySelector('[data-slide-image]');
-    if (image) {
-      const clone = image.cloneNode(true);
-      clone.hidden = false;
-      clone.removeAttribute('hidden');
-      clone.removeAttribute('data-slide-image');
-      clone.classList.remove('nv-sticky-slides__preload-image');
-      clone.setAttribute('data-active-slide', '');
-      this.mediaTarget.appendChild(clone);
-      this.activeMedia = clone;
-    }
-  }
+    activateByBlockId(blockId, scrollIntoView = false) {
+      if (!blockId) return;
+      const index = this.items.findIndex((item) => item.id === blockId || item.dataset.blockId === blockId);
+      if (index === -1) return;
 
-  pauseItemMedia(item) {
-    if (!item) return;
-    const video = item._nvStickyVideo;
-    if (video instanceof HTMLVideoElement) {
-      video.pause();
-      video.removeAttribute('autoplay');
-    }
-  }
+      if (scrollIntoView) {
+        this.items[index].scrollIntoView({
+          behavior: this.prefersReducedMotion ? 'auto' : 'smooth',
+          block: 'center',
+        });
+      }
 
-  getOrCreateVideo(item, src) {
-    if (!item._nvStickyVideo) {
-      const video = document.createElement('video');
-      video.src = src;
-      video.setAttribute('playsinline', '');
-      video.setAttribute('muted', '');
-      video.setAttribute('loop', '');
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true;
-      video.preload = 'metadata';
-      video.className = 'nv-sticky-slides__video';
-      video.tabIndex = -1;
-      video.setAttribute('aria-hidden', 'true');
-      item._nvStickyVideo = video;
-    } else if (item._nvStickyVideo.src !== src) {
-      item._nvStickyVideo.src = src;
-      item._nvStickyVideo.load();
+      this.setActiveIndex(index);
     }
 
-    return item._nvStickyVideo;
-  }
+    destroy() {
+      if (this.observer) {
+        this.observer.disconnect();
+      }
 
-  updateVideoPlayback(video) {
-    if (!(video instanceof HTMLVideoElement)) return;
+      if (this.motionQuery) {
+        if (typeof this.motionQuery.removeEventListener === 'function' && this.handleMotionChange) {
+          this.motionQuery.removeEventListener('change', this.handleMotionChange);
+        } else if (typeof this.motionQuery.removeListener === 'function' && this.handleMotionChange) {
+          this.motionQuery.removeListener(this.handleMotionChange);
+        }
+      }
 
-    if (this.prefersReducedMotion) {
-      video.pause();
-      video.removeAttribute('autoplay');
-      video.currentTime = 0;
-      return;
-    }
-
-    video.setAttribute('autoplay', '');
-    const playPromise = video.play();
-    if (playPromise && typeof playPromise.then === 'function') {
-      playPromise.catch(() => {
-        // Ignore autoplay errors triggered by browser policies.
-      });
+      this.items.forEach((item) => this.pauseMedia(item));
+      this.cleanupMedia();
+      this.initialized = false;
     }
   }
 
-  activateByBlockId(blockId, { scrollIntoView = false } = {}) {
-    if (!blockId) return;
-    const item = this.items.find((entry) => entry.dataset.blockId === blockId);
-    if (!item) return;
-
-    if (scrollIntoView) {
-      const prefersReducedMotion = this.prefersReducedMotion;
-      item.scrollIntoView({
-        behavior: prefersReducedMotion ? 'auto' : 'smooth',
-        block: 'center',
-      });
-    }
-
-    this.activateItem(item);
-  }
-
-  destroy() {
-    if (this.observer) {
-      this.observer.disconnect();
-    }
-
-    this.items.forEach((item) => {
-      this.pauseItemMedia(item);
+  function initSections(root = document) {
+    const sections = root.querySelectorAll('.nv-sticky-slides');
+    sections.forEach((section) => {
+      if (registry.has(section)) return;
+      const instance = new StickySlides(section);
+      if (instance.initialized) {
+        registry.set(section, instance);
+      }
     });
-
-    if (this.mediaTarget) {
-      this.mediaTarget.innerHTML = '';
-    }
-
-    if (this.nav && this.handleNavClick) {
-      this.nav.removeEventListener('click', this.handleNavClick);
-    }
-
-    if (this.motionQuery) {
-      if (this.motionQuery.removeEventListener) {
-        this.motionQuery.removeEventListener('change', this.motionListener);
-      } else if (this.motionQuery.removeListener) {
-        this.motionQuery.removeListener(this.motionListener);
-      }
-    }
   }
-}
 
-const nvStickyInstances = new Map();
+  function destroySectionById(sectionId) {
+    if (!sectionId) return;
+    const section = document.querySelector(`[data-section-id="${sectionId}"]`);
+    if (!section) return;
+    const instance = registry.get(section);
+    if (!instance) return;
+    instance.destroy();
+    registry.delete(section);
+  }
 
-const initNvStickySections = (root = document) => {
-  const sections = root.querySelectorAll('[data-nv-sticky]');
-  sections.forEach((section) => {
-    const id = section.dataset.sectionId || section.id;
-    if (!id || nvStickyInstances.has(id)) {
-      return;
-    }
-    const instance = new NvStickySlides(section);
-    if (instance && instance.items && instance.items.length) {
-      nvStickyInstances.set(id, instance);
-    }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initSections());
+  } else {
+    initSections();
+  }
+
+  document.addEventListener('shopify:section:load', (event) => {
+    initSections(event.target || document);
   });
-};
 
-const unloadNvStickySection = (sectionId) => {
-  const instance = nvStickyInstances.get(sectionId);
-  if (!instance) return;
-  instance.destroy();
-  nvStickyInstances.delete(sectionId);
-};
+  document.addEventListener('shopify:section:unload', (event) => {
+    const sectionId = event.detail && event.detail.sectionId;
+    destroySectionById(sectionId);
+  });
 
-const handleBlockSelect = (event) => {
-  const { sectionId, blockId } = event.detail || {};
-  if (!sectionId || !blockId) return;
-  const instance = nvStickyInstances.get(sectionId);
-  if (!instance) return;
-  instance.activateByBlockId(blockId, { scrollIntoView: true });
-};
+  document.addEventListener('shopify:block:select', (event) => {
+    const detail = event.detail || {};
+    const section = detail.sectionId ? document.querySelector(`[data-section-id="${detail.sectionId}"]`) : null;
+    if (!section) return;
+    const instance = registry.get(section);
+    if (!instance) return;
+    const blockId = detail.blockId;
+    if (!blockId) return;
+    instance.activateByBlockId(blockId, true);
+  });
 
-const handleBlockDeselect = (event) => {
-  const { sectionId, blockId } = event.detail || {};
-  if (!sectionId || !blockId) return;
-  const instance = nvStickyInstances.get(sectionId);
-  if (!instance) return;
-  instance.activateByBlockId(blockId);
-};
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => initNvStickySections());
-} else {
-  initNvStickySections();
-}
-
-document.addEventListener('shopify:section:load', (event) => {
-  const section = event.target.querySelector('[data-nv-sticky]');
-  const sectionId = event.detail && event.detail.sectionId;
-  if (!section) return;
-  initNvStickySections(event.target);
-  if (sectionId) {
-    const instance = nvStickyInstances.get(sectionId);
-    if (instance) {
-      instance.activateItem(instance.items[0]);
-    }
-  }
-});
-
-document.addEventListener('shopify:section:unload', (event) => {
-  const sectionId = event.detail && event.detail.sectionId;
-  if (!sectionId) return;
-  unloadNvStickySection(sectionId);
-});
-
-document.addEventListener('shopify:block:select', handleBlockSelect);
-
-document.addEventListener('shopify:block:deselect', handleBlockDeselect);
+  document.addEventListener('shopify:block:deselect', (event) => {
+    const detail = event.detail || {};
+    const section = detail.sectionId ? document.querySelector(`[data-section-id="${detail.sectionId}"]`) : null;
+    if (!section) return;
+    const instance = registry.get(section);
+    if (!instance) return;
+    const blockId = detail.blockId;
+    if (!blockId) return;
+    instance.activateByBlockId(blockId);
+  });
+})();
