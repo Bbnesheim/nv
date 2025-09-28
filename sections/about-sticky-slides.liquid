@@ -1,0 +1,174 @@
+{% liquid
+  assign intro_heading = section.settings.heading
+  assign intro_subheading = section.settings.subheading
+  assign intro_text = section.settings.body
+%}
+
+<section
+  class="about-sticky-slides section-{{ section.id }}"
+  data-about-sticky
+  data-section-id="{{ section.id }}"
+>
+  <div class="about-sticky-slides__inner">
+    {% if intro_heading or intro_subheading or intro_text != blank %}
+      <header class="about-sticky-slides__intro">
+        {% if intro_subheading %}
+          <p class="about-sticky-slides__eyebrow">{{ intro_subheading | escape }}</p>
+        {% endif %}
+        {% if intro_heading %}
+          <h2 class="about-sticky-slides__heading">{{ intro_heading | escape }}</h2>
+        {% endif %}
+        {% if intro_text %}
+          <div class="about-sticky-slides__body rte">{{ intro_text }}</div>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    {% if section.blocks.size > 0 %}
+      <div class="about-sticky-slides__layout">
+        <div class="about-sticky-slides__copy" data-sticky-copy>
+          {% for block in section.blocks %}
+            {% liquid
+              assign slide_video = block.settings.video_url
+              assign slide_bg = block.settings.background
+              assign has_bg = false
+              if slide_bg != blank and slide_bg.alpha > 0
+                assign has_bg = true
+              endif
+            %}
+            <article
+              class="about-sticky-slides__item"
+              data-sticky-item
+              data-block-id="{{ block.id }}"
+              {% if slide_video != blank %}
+                data-video="{{ slide_video | escape }}"
+              {% endif %}
+              {% if has_bg %}
+                data-bg="{{ slide_bg | escape }}"
+              {% endif %}
+              {{ block.shopify_attributes }}
+            >
+              {% if block.settings.eyebrow %}
+                <p class="about-sticky-slides__item-eyebrow">{{ block.settings.eyebrow | escape }}</p>
+              {% endif %}
+              {% if block.settings.heading %}
+                <h3 class="about-sticky-slides__item-heading">{{ block.settings.heading | escape }}</h3>
+              {% endif %}
+              {% if block.settings.body != blank %}
+                <div class="about-sticky-slides__item-body rte">{{ block.settings.body }}</div>
+              {% endif %}
+
+              {% if block.settings.cta_label != blank and block.settings.cta_link != blank %}
+                <a class="about-sticky-slides__item-link" href="{{ block.settings.cta_link | escape }}">{{ block.settings.cta_label | escape }}</a>
+              {% endif %}
+
+              {% if block.settings.image != blank %}
+                {{ block.settings.image | image_url: width: 1600 | image_tag:
+                  loading: 'lazy',
+                  decoding: 'async',
+                  hidden: 'hidden',
+                  class: 'about-sticky-slides__preload-image',
+                  data: {
+                    slide_image: ''
+                  },
+                  alt: block.settings.heading | escape
+                }}
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+        <div class="about-sticky-slides__visual" data-sticky-visual>
+          <div class="about-sticky-slides__visual-media" data-sticky-visual-target aria-hidden="true"></div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "About sticky slides",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "richtext",
+      "id": "body",
+      "label": "Body"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Eyebrow"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading"
+        },
+        {
+          "type": "richtext",
+          "id": "body",
+          "label": "Body"
+        },
+        {
+          "type": "text",
+          "id": "cta_label",
+          "label": "Link label"
+        },
+        {
+          "type": "url",
+          "id": "cta_link",
+          "label": "Link URL"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "url",
+          "id": "video_url",
+          "label": "Video URL",
+          "info": "MP4 video hosted on Shopify Files or CDN"
+        },
+        {
+          "type": "color",
+          "id": "background",
+          "label": "Visual background"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "About sticky slides",
+      "blocks": [
+        {
+          "type": "slide"
+        },
+        {
+          "type": "slide"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
