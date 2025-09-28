@@ -1,0 +1,132 @@
+{{ 'about.css' | asset_url | stylesheet_tag }}
+
+<section class="section about-cta color-{{ section.settings.color_scheme }} gradient">
+  <div class="about-cta__inner page-width">
+    <div class="about-cta__content">
+      {%- assign heading_tag = section.settings.heading_tag -%}
+      {%- if section.settings.heading != blank -%}
+        <{{ heading_tag }} class="about-cta__heading">{{ section.settings.heading | escape }}</{{ heading_tag }}>
+      {%- endif -%}
+
+      {%- if section.settings.text != blank -%}
+        <div class="about-cta__text rte">
+          {{ section.settings.text }}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.button_label != blank or section.settings.secondary_button_label != blank -%}
+        <div class="about-cta__actions">
+          {%- if section.settings.button_label != blank -%}
+            <a
+              {% if section.settings.button_link == blank %}
+                role="link"
+                aria-disabled="true"
+              {% else %}
+                href="{{ section.settings.button_link }}"
+              {% endif %}
+              class="button{% if section.settings.button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+            >
+              {{- section.settings.button_label | escape -}}
+            </a>
+          {%- endif -%}
+          {%- if section.settings.secondary_button_label != blank -%}
+            <a
+              {% if section.settings.secondary_button_link == blank %}
+                role="link"
+                aria-disabled="true"
+              {% else %}
+                href="{{ section.settings.secondary_button_link }}"
+              {% endif %}
+              class="button{% if section.settings.secondary_button_style_secondary %} button--secondary{% else %} button--primary{% endif %}"
+            >
+              {{- section.settings.secondary_button_label | escape -}}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "About call-to-action",
+  "tag": "section",
+  "class": "section about",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Ready to join the journey?"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading level",
+      "options": [
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" },
+        { "value": "h4", "label": "H4" }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Invite your community to explore your products, read your story, or connect with your team.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Primary button label",
+      "default": "Explore products"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Primary button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_style_secondary",
+      "label": "Use secondary style for primary button",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_label",
+      "label": "Secondary button label"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_link",
+      "label": "Secondary button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "secondary_button_style_secondary",
+      "label": "Use secondary style for secondary button",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1",
+      "options": [
+        { "value": "scheme-1", "label": "t:sections.all.colors.scheme_1" },
+        { "value": "scheme-2", "label": "t:sections.all.colors.scheme_2" },
+        { "value": "scheme-3", "label": "t:sections.all.colors.scheme_3" },
+        { "value": "scheme-4", "label": "t:sections.all.colors.scheme_4" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "About call-to-action"
+    }
+  ]
+}
+{% endschema %}

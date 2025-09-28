@@ -1,0 +1,37 @@
+{
+  "sections": {
+    "hero": {
+      "type": "about-hero",
+      "settings": {
+        "kicker": "About us",
+        "heading": "Purposefully crafted essentials",
+        "heading_tag": "h1",
+        "text": "<p>We believe in thoughtful details, long-lasting materials, and sharing the journey openly. Get to know the team behind every product.</p>",
+        "button_label": "Shop now",
+        "button_link": "shopify://collections/all",
+        "button_style_secondary": false,
+        "image_position": "right",
+        "color_scheme": "scheme-1"
+      }
+    },
+    "cta": {
+      "type": "about-cta",
+      "settings": {
+        "heading": "Let&apos;s stay in touch",
+        "heading_tag": "h2",
+        "text": "<p>Join our newsletter for behind-the-scenes updates, product drops, and stories from the workshop.</p>",
+        "button_label": "Subscribe",
+        "button_link": "shopify://pages/contact",
+        "button_style_secondary": false,
+        "secondary_button_label": "Read our journal",
+        "secondary_button_link": "shopify://blogs/news",
+        "secondary_button_style_secondary": true,
+        "color_scheme": "scheme-1"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "cta"
+  ]
+}
