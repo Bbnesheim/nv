@@ -6,6 +6,8 @@ class AboutStickySlides {
     this.visualContainer = section.querySelector('[data-sticky-visual]');
     this.mediaTarget = section.querySelector('[data-sticky-visual-target]');
     this.visualSurface = this.mediaTarget ? this.mediaTarget.parentElement : null;
+    this.nav = section.querySelector('[data-sticky-nav]');
+    this.navLinks = this.nav ? Array.from(this.nav.querySelectorAll('[data-sticky-nav-link]')) : [];
     this.activeItem = null;
     this.activeMedia = null;
 
@@ -45,6 +47,11 @@ class AboutStickySlides {
       this.observer.observe(item);
     });
 
+    if (this.nav && this.navLinks.length) {
+      this.handleNavClick = this.handleNavClick.bind(this);
+      this.nav.addEventListener('click', this.handleNavClick);
+    }
+
     // Activate the first item immediately so an initial visual is rendered.
     this.activateItem(this.items[0]);
   }
@@ -62,6 +69,7 @@ class AboutStickySlides {
         target.classList.remove('is-active');
         this.activeMedia = null;
         this.activeItem = null;
+        this.updateNavState(null);
         return;
       }
 
@@ -84,6 +92,32 @@ class AboutStickySlides {
     this.activeItem = item;
     this.activeItem.classList.add('is-active');
     this.swapVisualForItem(item);
+    this.updateNavState(item.dataset.blockId);
+  }
+
+  handleNavClick(event) {
+    if (!this.navLinks.length) return;
+    const link = event.target.closest('[data-sticky-nav-link]');
+    if (!link || !this.nav.contains(link)) return;
+    const { blockId } = link.dataset;
+    if (!blockId) return;
+    event.preventDefault();
+    this.activateByBlockId(blockId, { scrollIntoView: true });
+    link.focus();
+  }
+
+  updateNavState(blockId) {
+    if (!this.navLinks.length) return;
+    this.navLinks.forEach((link) => {
+      const isActive = Boolean(blockId && link.dataset.blockId === blockId);
+      if (isActive) {
+        link.setAttribute('aria-current', 'true');
+        link.classList.add('is-active');
+      } else {
+        link.removeAttribute('aria-current');
+        link.classList.remove('is-active');
+      }
+    });
   }
 
   swapVisualForItem(item) {
@@ -213,6 +247,10 @@ class AboutStickySlides {
 
     if (this.mediaTarget) {
       this.mediaTarget.innerHTML = '';
+    }
+
+    if (this.nav && this.handleNavClick) {
+      this.nav.removeEventListener('click', this.handleNavClick);
     }
 
     if (this.motionQuery) {

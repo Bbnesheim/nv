@@ -143,6 +143,54 @@
   gap: clamp(2.4rem, 5vw, 4.8rem);
 }
 
+.template-page-about .about-sticky-slides__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.template-page-about .about-sticky-slides__nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.template-page-about .about-sticky-slides__nav-item {
+  flex: none;
+}
+
+.template-page-about .about-sticky-slides__nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-foreground), 0.16);
+  background: transparent;
+  color: rgba(var(--color-foreground), 0.72);
+  font-size: 1.3rem;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.template-page-about .about-sticky-slides__nav-link:hover,
+.template-page-about .about-sticky-slides__nav-link[aria-current="true"],
+.template-page-about .about-sticky-slides__nav-link.is-active {
+  background: rgba(var(--color-foreground), 0.08);
+  border-color: rgba(var(--color-foreground), 0.24);
+  color: rgb(var(--color-foreground));
+}
+
+.template-page-about .about-sticky-slides__nav-link:focus-visible {
+  outline: 0.3rem solid rgba(var(--color-foreground), 0.28);
+  outline-offset: 0.2rem;
+}
+
 .template-page-about .about-sticky-slides__intro {
   display: grid;
   gap: clamp(1rem, 3vw, 1.8rem);
