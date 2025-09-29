@@ -35,14 +35,14 @@
           endif
         %}
         {% if block.settings.image != blank %}
-          {{ block.settings.image | image_url: width: 2400 | image_tag:
-            loading: 'lazy',
-            decoding: 'async',
-            'data-slide-image': 'true',
-            class: 'nv-sticky-slides__preload-image',
-            'aria-hidden': 'true',
-            alt: block.settings.title | escape
-          }}
+          <img
+            src="{{ block.settings.image | image_url: width: 2400 }}"
+            loading="lazy"
+            decoding="async"
+            alt="{{ block.settings.title | escape }}"
+            data-slide-image="true"
+            class="nv-sticky-slides__preload-image"
+            aria-hidden="true">
         {% endif %}
         <article
           class="nv-sticky-slides__item{% if forloop.first %} is-active{% endif %}"
@@ -85,9 +85,7 @@
   "name": "Sticky slides",
   "tag": "section",
   "class": "section",
-  "enabled_on": {
-    "templates": ["*"]
-  },
+  "enabled_on": { "templates": ["*"] },
   "settings": [
     {
       "type": "range",
@@ -138,10 +136,6 @@
       ]
     }
   ],
-  "presets": [
-    {
-      "name": "Sticky slides"
-    }
-  ]
+  "presets": [{ "name": "Sticky slides" }]
 }
 {% endschema %}
