@@ -37,11 +37,10 @@
         {% if block.settings.image != blank %}
           {{ block.settings.image | image_url: width: 2400 | image_tag:
             loading: 'lazy',
-            hidden: 'hidden',
             decoding: 'async',
-            data: {
-              slide_image: ''
-            },
+            'data-slide-image': 'true',
+            class: 'nv-sticky-slides__preload-image',
+            'aria-hidden': 'true',
             alt: block.settings.title | escape
           }}
         {% endif %}
