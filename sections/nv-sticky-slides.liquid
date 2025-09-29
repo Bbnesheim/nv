@@ -110,7 +110,8 @@
             <div class="nv-sticky-slides__text">
               <h3 class="nv-sticky-slides__title">{{ slide.title }}</h3>
               <div class="nv-sticky-slides__body rte"><p>{{ slide.body }}</p></div>
-              {{ slide.placeholder | placeholder_svg_tag: 'nv-sticky-slides__placeholder-svg' }}
+              {%- assign ph = slide.placeholder | default: 'lifestyle-1' -%}
+              {{ ph | placeholder_svg_tag: 'nv-sticky-slides__placeholder-svg' }}
               <a href="#" class="button nv-sticky-slides__cta">Learn more</a>
             </div>
           </article>
