@@ -1,7 +1,13 @@
 {% comment %}
   Sticky Slides Section
-  - Fullscreen sticky text + swapping background hero
-  - Menu, robust media guard, optional Dawn component CSS
+  GOALS:
+  1. Fullscreen sticky text + swapping background hero (2-column grid, sticky left, right swaps background).
+  2. Top-right menu from link_list.
+  3. Media guard: video > image > SVG placeholder (default 'lifestyle-1').
+  4. Optional Dawn component CSS toggles.
+  5. Schema: sticky_top, visual_aspect_ratio, menu, 4 booleans, slide block with title, body, cta_label, cta_url, image, video, placeholder, bg_color.
+  6. BEM classes.
+  7. No Liquid errors, all tags closed.
 {% endcomment %}
 
 {%- liquid
@@ -73,7 +79,12 @@
     </div>
     <div class="nv-sticky-slides__visuals">
       {%- for block in section.blocks -%}
-        <div class="nv-sticky-slides__visual{% if forloop.first %} is-visible{% endif %}" data-sticky-visual data-index="{{ forloop.index0 }}">
+        <div
+          class="nv-sticky-slides__visual{% if forloop.first %} is-visible{% endif %}"
+          data-sticky-visual
+          data-index="{{ forloop.index0 }}"
+          {% if block.settings.bg_color != blank %}style="background: {{ block.settings.bg_color }};"{% endif %}
+        >
           {%- if block.settings.video != blank -%}
             {{ block.settings.video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, controls: false, preload: "metadata" }}
           {%- elsif block.settings.image != blank -%}
