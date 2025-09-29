@@ -9,6 +9,18 @@
  */
 {
   "sections": {
+    "nv_sticky_slides_TFAGTP": {
+      "type": "nv-sticky-slides",
+      "name": "Sticky slides",
+      "settings": {
+        "sticky_top": 140,
+        "visual_aspect_ratio": "16/9",
+        "load_list_menu_css": true,
+        "load_search_css": true,
+        "load_menu_drawer_css": true,
+        "load_cart_notification_css": true
+      }
+    },
     "image_banner": {
       "type": "image-banner",
       "blocks": {
@@ -74,14 +86,6 @@
         "swipe_on_mobile": false,
         "padding_top": 44,
         "padding_bottom": 36
-      }
-    },
-    "nv_sticky_slides_TFAGTP": {
-      "type": "nv-sticky-slides",
-      "name": "Sticky slides",
-      "settings": {
-        "sticky_top": 80,
-        "visual_aspect_ratio": "16/9"
       }
     }
   },
