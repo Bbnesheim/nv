@@ -304,4 +304,52 @@
     if (!blockId) return;
     instance.activateByBlockId(blockId);
   });
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var section = document.querySelector('.nv-sticky-slides');
+    if (!section) return;
+
+    var items = Array.from(section.querySelectorAll('.nv-sticky-slides__item'));
+    var visuals = Array.from(section.querySelectorAll('.nv-sticky-slides__visual'));
+
+    if (!items.length || !visuals.length) return;
+
+    function activateSlide(idx) {
+      items.forEach((item, i) => {
+        item.classList.toggle('is-active', i === idx);
+      });
+      visuals.forEach((visual, i) => {
+        visual.classList.toggle('is-visible', i === idx);
+      });
+    }
+
+    // IntersectionObserver for sticky text
+    if ('IntersectionObserver' in window) {
+      var observer = new window.IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            var idx = items.indexOf(entry.target);
+            if (idx !== -1) activateSlide(idx);
+          }
+        });
+      }, {
+        root: null,
+        rootMargin: '0px 0px -60% 0px',
+        threshold: 0.5
+      });
+
+      items.forEach(item => observer.observe(item));
+    } else {
+      // Fallback: scroll handler
+      window.addEventListener('scroll', function () {
+        var scrollY = window.scrollY || window.pageYOffset;
+        var foundIdx = 0;
+        items.forEach((item, i) => {
+          var rect = item.getBoundingClientRect();
+          if (rect.top < window.innerHeight * 0.5) foundIdx = i;
+        });
+        activateSlide(foundIdx);
+      });
+    }
+  });
 })();

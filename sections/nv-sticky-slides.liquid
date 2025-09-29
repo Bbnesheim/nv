@@ -1,20 +1,32 @@
-{% liquid
+{% comment %}
+  Sticky Slides Section
+  - Fullscreen sticky text + swapping background hero
+  - Menu, robust media guard, optional Dawn component CSS
+{% endcomment %}
+
+{%- liquid
   assign sticky_top = section.settings.sticky_top | default: 80
-  assign aspect_ratio_setting = section.settings.visual_aspect_ratio | default: '16/9'
-  assign aspect_ratio_value = aspect_ratio_setting | replace: '/', ' / '
-  assign first_block = section.blocks | first
-  assign first_video = ''
-  assign first_image = null
-  assign first_bg = ''
-  if first_block
-    assign first_video = first_block.settings.video | strip
-    assign first_image = first_block.settings.image
-    assign first_bg_setting = first_block.settings.bg_color
-    if first_bg_setting != blank and first_bg_setting.alpha > 0
-      assign first_bg = first_bg_setting
-    endif
-  endif
-%}
+  assign aspect_ratio = section.settings.visual_aspect_ratio | default: '16/9'
+  assign aspect_ratio_value = aspect_ratio | replace: '/', ' / '
+  assign menu = section.settings.menu
+  assign load_list_menu = section.settings.load_list_menu
+  assign load_search = section.settings.load_search
+  assign load_menu_drawer = section.settings.load_menu_drawer
+  assign load_cart_notification = section.settings.load_cart_notification
+-%}
+
+{%- if load_list_menu -%}
+  <link rel="stylesheet" href="{{ 'component-list-menu.css' | asset_url }}">
+{%- endif -%}
+{%- if load_search -%}
+  <link rel="stylesheet" href="{{ 'component-search.css' | asset_url }}">
+{%- endif -%}
+{%- if load_menu_drawer -%}
+  <link rel="stylesheet" href="{{ 'component-menu-drawer.css' | asset_url }}">
+{%- endif -%}
+{%- if load_cart_notification -%}
+  <link rel="stylesheet" href="{{ 'component-cart-notification.css' | asset_url }}">
+{%- endif -%}
 
 {{ 'nv-sticky.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'nv-sticky.js' | asset_url }}" defer></script>
@@ -22,60 +34,55 @@
 <section
   class="nv-sticky-slides"
   data-section-id="{{ section.id }}"
-  style="--sticky-top: {{ sticky_top }}px; --visual-aspect-ratio: {{ aspect_ratio_value | escape }};"
+  style="--sticky-top: {{ sticky_top }}px; --visual-aspect-ratio: {{ aspect_ratio_value }};"
 >
+  {%- if menu != blank and linklists[menu] and linklists[menu].links.size > 0 -%}
+    <nav class="nv-ss__menu" aria-label="Section menu">
+      <ul class="nv-ss__menu-list">
+        {%- for link in linklists[menu].links -%}
+          <li>
+            <a href="{{ link.url | escape }}" {% if link.current %}aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </nav>
+  {%- endif -%}
+
   <div class="nv-sticky-slides__layout">
     <div class="nv-sticky-slides__copy">
-      {% for block in section.blocks %}
-        {% liquid
-          assign slide_video = block.settings.video | strip
-          assign slide_bg = ''
-          if block.settings.bg_color != blank and block.settings.bg_color.alpha > 0
-            assign slide_bg = block.settings.bg_color
-          endif
-        %}
-        {% if block.settings.image != blank %}
-          <img
-            src="{{ block.settings.image | image_url: width: 2400 }}"
-            loading="lazy"
-            decoding="async"
-            alt="{{ block.settings.title | escape }}"
-            data-slide-image="true"
-            class="nv-sticky-slides__preload-image"
-            aria-hidden="true">
-        {% endif %}
+      {%- for block in section.blocks -%}
         <article
           class="nv-sticky-slides__item{% if forloop.first %} is-active{% endif %}"
           id="slide-{{ forloop.index }}"
           data-sticky-item
-          data-block-id="{{ block.id }}"
-          data-video="{{ slide_video | escape }}"
-          data-bg="{{ slide_bg | escape }}"
           {{ block.shopify_attributes }}
         >
-          {% if block.settings.title != blank %}
-            <h3>{{ block.settings.title | escape }}</h3>
-          {% endif %}
-          {% if block.settings.body != blank %}
-            <div class="rte">{{ block.settings.body }}</div>
-          {% endif %}
+          <div class="nv-sticky-slides__text">
+            {%- if block.settings.title != blank -%}
+              <h2>{{ block.settings.title | escape }}</h2>
+            {%- endif -%}
+            {%- if block.settings.body != blank -%}
+              <div class="rte">{{ block.settings.body }}</div>
+            {%- endif -%}
+            {%- if block.settings.cta_label and block.settings.cta_url -%}
+              <a class="nv-sticky-slides__cta" href="{{ block.settings.cta_url | escape }}">{{ block.settings.cta_label | escape }}</a>
+            {%- endif -%}
+          </div>
         </article>
-      {% endfor %}
+      {%- endfor -%}
     </div>
-    <div class="nv-sticky-slides__visual"{% if first_bg != blank %} style="background-color: {{ first_bg | escape }};"{% endif %}>
-      <div class="nv-sticky-slides__visual-media" aria-hidden="true">
-        {% if first_block %}
-          {% if first_video != blank %}
-            <video src="{{ first_video | escape }}" playsinline muted loop preload="metadata"></video>
-          {% elsif first_image %}
-            {{ first_image | image_url: width: 2400 | image_tag:
-              loading: 'eager',
-              decoding: 'async',
-              alt: first_block.settings.title | escape
-            }}
-          {% endif %}
-        {% endif %}
-      </div>
+    <div class="nv-sticky-slides__visuals">
+      {%- for block in section.blocks -%}
+        <div class="nv-sticky-slides__visual{% if forloop.first %} is-visible{% endif %}" data-sticky-visual data-index="{{ forloop.index0 }}">
+          {%- if block.settings.video != blank -%}
+            {{ block.settings.video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, controls: false, preload: "metadata" }}
+          {%- elsif block.settings.image != blank -%}
+            {{ block.settings.image | image_url: width: 2880 | image_tag: loading: 'eager', decoding: 'async', alt: block.settings.title | escape }}
+          {%- else -%}
+            {{ block.settings.placeholder | default: 'lifestyle-1' | placeholder_svg_tag: 'nv-sticky-slides__placeholder-svg' }}
+          {%- endif -%}
+        </div>
+      {%- endfor -%}
     </div>
   </div>
 </section>
@@ -90,17 +97,52 @@
     {
       "type": "range",
       "id": "sticky_top",
-      "label": "Sticky offset",
-      "min": 40,
-      "max": 140,
+      "label": "Sticky offset (px)",
+      "min": 0,
+      "max": 200,
       "step": 1,
       "default": 80
     },
     {
-      "type": "text",
+      "type": "select",
       "id": "visual_aspect_ratio",
       "label": "Visual aspect ratio",
+      "options": [
+        { "value": "16/9", "label": "16:9" },
+        { "value": "4/3", "label": "4:3" },
+        { "value": "1/1", "label": "1:1" },
+        { "value": "21/9", "label": "21:9" }
+      ],
       "default": "16/9"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Top-right menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "load_list_menu",
+      "label": "Load Dawn list menu CSS",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "load_search",
+      "label": "Load Dawn search CSS",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "load_menu_drawer",
+      "label": "Load Dawn menu drawer CSS",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "load_cart_notification",
+      "label": "Load Dawn cart notification CSS",
+      "default": false
     }
   ],
   "blocks": [
@@ -119,14 +161,29 @@
           "label": "Body"
         },
         {
+          "type": "text",
+          "id": "cta_label",
+          "label": "CTA label"
+        },
+        {
+          "type": "url",
+          "id": "cta_url",
+          "label": "CTA URL"
+        },
+        {
           "type": "image_picker",
           "id": "image",
           "label": "Image"
         },
         {
-          "type": "url",
+          "type": "video",
           "id": "video",
-          "label": "Video URL"
+          "label": "Video"
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "SVG placeholder (Shopify name, e.g. 'lifestyle-1')"
         },
         {
           "type": "color",
@@ -136,6 +193,14 @@
       ]
     }
   ],
-  "presets": [{ "name": "Sticky slides" }]
+  "presets": [
+    {
+      "name": "Sticky slides",
+      "blocks": [
+        { "type": "slide" },
+        { "type": "slide" }
+      ]
+    }
+  ]
 }
 {% endschema %}
