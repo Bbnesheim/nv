@@ -9,12 +9,28 @@
   if first_block
     assign first_video = first_block.settings.video | strip
     assign first_image = first_block.settings.image
+    if first_image == blank and first_block.settings.mobile_image != blank
+      assign first_image = first_block.settings.mobile_image
+    endif
     assign first_bg_setting = first_block.settings.bg_color
     if first_bg_setting != blank and first_bg_setting.alpha > 0
       assign first_bg = first_bg_setting
     endif
   endif
 %}
+
+{% if section.settings.load_list_menu_css %}
+  <link rel="stylesheet" href="{{ 'component-list-menu.css' | asset_url }}" media="print" onload="this.media='all'">
+{% endif %}
+{% if section.settings.load_search_css %}
+  <link rel="stylesheet" href="{{ 'component-search.css' | asset_url }}" media="print" onload="this.media='all'">
+{% endif %}
+{% if section.settings.load_menu_drawer_css %}
+  <link rel="stylesheet" href="{{ 'component-menu-drawer.css' | asset_url }}" media="print" onload="this.media='all'">
+{% endif %}
+{% if section.settings.load_cart_notification_css %}
+  <link rel="stylesheet" href="{{ 'component-cart-notification.css' | asset_url }}" media="print" onload="this.media='all'">
+{% endif %}
 
 {{ 'nv-sticky.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'nv-sticky.js' | asset_url }}" defer></script>
@@ -26,41 +42,82 @@
 >
   <div class="nv-sticky-slides__layout">
     <div class="nv-sticky-slides__copy">
-      {% for block in section.blocks %}
-        {% liquid
-          assign slide_video = block.settings.video | strip
-          assign slide_bg = ''
-          if block.settings.bg_color != blank and block.settings.bg_color.alpha > 0
-            assign slide_bg = block.settings.bg_color
-          endif
-        %}
-        {% if block.settings.image != blank %}
-          <img
-            src="{{ block.settings.image | image_url: width: 2400 }}"
-            loading="lazy"
-            decoding="async"
-            alt="{{ block.settings.title | escape }}"
-            data-slide-image="true"
-            class="nv-sticky-slides__preload-image"
-            aria-hidden="true">
-        {% endif %}
-        <article
-          class="nv-sticky-slides__item{% if forloop.first %} is-active{% endif %}"
-          id="slide-{{ forloop.index }}"
-          data-sticky-item
-          data-block-id="{{ block.id }}"
-          data-video="{{ slide_video | escape }}"
-          data-bg="{{ slide_bg | escape }}"
-          {{ block.shopify_attributes }}
-        >
-          {% if block.settings.title != blank %}
-            <h3>{{ block.settings.title | escape }}</h3>
+      {% if section.blocks.size > 0 %}
+        {% for block in section.blocks %}
+          {% liquid
+            assign slide_video = block.settings.video | strip
+            assign slide_bg = ''
+            if block.settings.bg_color != blank and block.settings.bg_color.alpha > 0
+              assign slide_bg = block.settings.bg_color
+            endif
+          %}
+          {% if block.settings.image != blank %}
+            <img
+              src="{{ block.settings.image | image_url: width: 2400 }}"
+              loading="lazy"
+              decoding="async"
+              alt="{{ block.settings.title | escape }}"
+              data-slide-image="true"
+              class="nv-sticky-slides__preload-image"
+              aria-hidden="true">
+          {% elsif block.settings.mobile_image != blank %}
+            <img
+              src="{{ block.settings.mobile_image | image_url: width: 1600 }}"
+              loading="lazy"
+              decoding="async"
+              alt="{{ block.settings.title | escape }}"
+              data-slide-image="true"
+              class="nv-sticky-slides__preload-image"
+              aria-hidden="true">
           {% endif %}
-          {% if block.settings.body != blank %}
-            <div class="rte">{{ block.settings.body }}</div>
-          {% endif %}
-        </article>
-      {% endfor %}
+          <article
+            class="nv-sticky-slides__item{% if forloop.first %} is-active{% endif %}"
+            id="slide-{{ forloop.index }}"
+            data-sticky-item
+            data-block-id="{{ block.id }}"
+            data-video="{{ slide_video | escape }}"
+            data-bg="{{ slide_bg | escape }}"
+            {% if block.settings.mobile_image != blank %} data-mobile-src="{{ block.settings.mobile_image | image_url: width: 1600 }}"{% endif %}
+            {{ block.shopify_attributes }}
+          >
+            <div class="nv-sticky-slides__text">
+              {% if block.settings.title != blank %}
+                <h3 class="nv-sticky-slides__title">{{ block.settings.title | escape }}</h3>
+              {% endif %}
+              {% if block.settings.body != blank %}
+                <div class="nv-sticky-slides__body rte">{{ block.settings.body }}</div>
+              {% endif %}
+              {% if block.settings.cta_label != blank and block.settings.cta_link != blank %}
+                <a href="{{ block.settings.cta_link }}" class="button nv-sticky-slides__cta">{{ block.settings.cta_label | escape }}</a>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        {% capture placeholder_json %}[
+          {"title":"Lifestyle highlight","body":"Use this space to share your brand story.","placeholder":"lifestyle-1"},
+          {"title":"Product focus","body":"Highlight key features or collections.","placeholder":"product-1"},
+          {"title":"Collection spotlight","body":"Link to curated assortments for customers.","placeholder":"collection-1"}
+        ]{% endcapture %}
+        {% assign placeholder_slides = placeholder_json | parse_json %}
+        {% for slide in placeholder_slides %}
+          <article
+            class="nv-sticky-slides__item{% if forloop.first %} is-active{% endif %}"
+            id="slide-{{ forloop.index }}"
+            data-sticky-item
+            data-block-id="placeholder-{{ forloop.index }}"
+            data-video=""
+            data-bg=""
+          >
+            <div class="nv-sticky-slides__text">
+              <h3 class="nv-sticky-slides__title">{{ slide.title }}</h3>
+              <div class="nv-sticky-slides__body rte"><p>{{ slide.body }}</p></div>
+              {{ slide.placeholder | placeholder_svg_tag: 'nv-sticky-slides__placeholder-svg' }}
+              <a href="#" class="button nv-sticky-slides__cta">Learn more</a>
+            </div>
+          </article>
+        {% endfor %}
+      {% endif %}
     </div>
     <div class="nv-sticky-slides__visual"{% if first_bg != blank %} style="background-color: {{ first_bg | escape }};"{% endif %}>
       <div class="nv-sticky-slides__visual-media" aria-hidden="true">
@@ -74,6 +131,10 @@
               alt: first_block.settings.title | escape
             }}
           {% endif %}
+        {% else %}
+          <div class="nv-sticky-slides__placeholder-media">
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          </div>
         {% endif %}
       </div>
     </div>
@@ -101,6 +162,30 @@
       "id": "visual_aspect_ratio",
       "label": "Visual aspect ratio",
       "default": "16/9"
+    },
+    {
+      "type": "checkbox",
+      "id": "load_list_menu_css",
+      "label": "Load list-menu styles",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "load_search_css",
+      "label": "Load search styles",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "load_menu_drawer_css",
+      "label": "Load menu drawer styles",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "load_cart_notification_css",
+      "label": "Load cart notification styles",
+      "default": false
     }
   ],
   "blocks": [
@@ -124,6 +209,11 @@
           "label": "Image"
         },
         {
+          "type": "image_picker",
+          "id": "mobile_image",
+          "label": "Mobile image"
+        },
+        {
           "type": "url",
           "id": "video",
           "label": "Video URL"
@@ -132,10 +222,29 @@
           "type": "color",
           "id": "bg_color",
           "label": "Background color"
+        },
+        {
+          "type": "text",
+          "id": "cta_label",
+          "label": "CTA label"
+        },
+        {
+          "type": "url",
+          "id": "cta_link",
+          "label": "CTA link"
         }
       ]
     }
   ],
-  "presets": [{ "name": "Sticky slides" }]
+  "presets": [
+    {
+      "name": "Sticky slides",
+      "blocks": [
+        {
+          "type": "slide"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}
