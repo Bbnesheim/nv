@@ -87,8 +87,10 @@
         >
           {%- if block.settings.video != blank -%}
             {{ block.settings.video | video_tag: autoplay: true, loop: true, muted: true, playsinline: true, controls: false, preload: "metadata" }}
+          {%- elsif block.settings.video_url != blank -%}
+            {# Optionally handle video_url here, or skip to image fallback #}
           {%- elsif block.settings.image != blank -%}
-            {{ block.settings.image | image_url: width: 2880 | image_tag: loading: 'eager', decoding: 'async', alt: block.settings.title | escape }}
+            {{ block.settings.image | image_url: width: 2880 | image_tag: loading: 'eager', decoding: 'async', alt: block.settings.title }}
           {%- else -%}
             {{ block.settings.placeholder | default: 'lifestyle-1' | placeholder_svg_tag: 'nv-sticky-slides__placeholder-svg' }}
           {%- endif -%}
