@@ -352,4 +352,46 @@
       });
     }
   });
+
+  (() => {
+    const section = document.currentScript && document.currentScript.closest
+      ? document.currentScript.closest('.nv-sticky-slides')
+      : document.querySelector('.nv-sticky-slides');
+    if (!section) return;
+
+    const items = Array.from(section.querySelectorAll('.nv-sticky-slides__item'));
+    const visuals = Array.from(section.querySelectorAll('.nv-sticky-slides__visual'));
+    if (!items.length || visuals.length !== items.length) return;
+
+    function setActive(i){
+      items.forEach((el,idx)=>el.classList.toggle('is-active', idx===i));
+      visuals.forEach((el,idx)=>el.classList.toggle('is-visible', idx===i));
+    }
+
+    // IntersectionObserver to detect the currently centered item
+    const io = ('IntersectionObserver' in window) ? new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if (entry.isIntersecting){
+          const i = items.indexOf(entry.target);
+          if (i>=0) setActive(i);
+        }
+      });
+    }, { root: null, rootMargin: '0px 0px -50% 0px', threshold: 0.0 }) : null;
+
+    if (io) items.forEach(el=>io.observe(el));
+    else {
+      // Fallback: on scroll, find nearest item to viewport top
+     const onScroll=()=>{
+        const top = window.scrollY + (parseInt(getComputedStyle(section).getPropertyValue('--sticky-top'))||80);
+        let bestI = 0, bestD = Infinity;
+        items.forEach((el,i)=>{
+          const d = Math.abs(el.getBoundingClientRect().top + window.scrollY - top);
+          if (d < bestD){ bestD = d; bestI = i; }
+        });
+        setActive(bestI);
+      };
+      window.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    }
+  })();
 })();

@@ -119,6 +119,10 @@
   background: rgba(0,0,0,0.07);
 }
 
+.nv-sticky-slides__preload-image {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .nv-sticky-slides__layout {
     grid-template-columns: 1fr;
