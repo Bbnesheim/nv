@@ -11,10 +11,35 @@
   "sections": {
     "nv_sticky_slides_TFAGTP": {
       "type": "nv-sticky-slides",
+      "blocks": {
+        "slide_kQCJBU": {
+          "type": "slide",
+          "settings": {
+            "title": "Nesheim & Vatten",
+            "body": "<p>OP SEO STUFF</p>",
+            "image": "shopify://shop_images/nesheim-vatten-analytics-dashboard-digital-markedsforing.webp",
+            "video": "",
+            "bg_color": "#334fb4"
+          }
+        },
+        "slide_MDtNjC": {
+          "type": "slide",
+          "settings": {
+            "title": "MASSE INNHOLD",
+            "body": "<p>Dette ER BRA</p>",
+            "video": "",
+            "bg_color": "#334fb4"
+          }
+        }
+      },
+      "block_order": [
+        "slide_kQCJBU",
+        "slide_MDtNjC"
+      ],
       "name": "Sticky slides",
       "settings": {
-        "sticky_top": 140,
-        "visual_aspect_ratio": "16/9",
+        "sticky_top": 90,
+        "visual_aspect_ratio": "16:9",
         "load_list_menu_css": true,
         "load_search_css": true,
         "load_menu_drawer_css": true,
