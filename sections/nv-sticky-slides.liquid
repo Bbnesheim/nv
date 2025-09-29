@@ -18,12 +18,10 @@
 
 {{ 'nv-sticky.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'nv-sticky.js' | asset_url }}" defer></script>
-
 <section
   class="nv-sticky-slides"
   data-section-id="{{ section.id }}"
-  style="--sticky-top: {{ sticky_top }}px; --visual-aspect-ratio: {{ aspect_ratio_value | escape }};"
->
+  style="--sticky-top: {{ sticky_top }}px; --visual-aspect-ratio: {{ aspect_ratio_value }};">
   <div class="nv-sticky-slides__layout">
     <div class="nv-sticky-slides__copy">
       {% for block in section.blocks %}
